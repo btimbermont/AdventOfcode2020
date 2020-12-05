@@ -26,10 +26,42 @@ public class Day3 {
                 treesEncountered++;
             }
 
+            // move to the right
             currentPosition += movement;
             currentPosition %= currentTopography.length();
         }
-        System.out.println("Trees encoutnered: " + treesEncountered);
+        System.out.println("Trees encountered: " + treesEncountered);
+
+        System.out.println("Part 2:");
+        int[][] slopes = {{1, 1}, {3, 1}, {5, 1}, {7, 1}, {1, 2}};
+        long treesHitProduct = 1;
+
+        for (int[] slope : slopes) {
+            final int right = slope[0];
+            final int down = slope[1];
+            System.out.println(String.format("Checking slope [Right %d, down %d]", right, down));
+
+            currentPosition = 0;
+            treesEncountered = 0;
+
+            for (int height = 0; height < topography.size(); height += down) {
+                final String currentTopography = topography.get(height);
+
+                if (TREE == currentTopography.charAt(currentPosition)) {
+                    treesEncountered++;
+                }
+
+                // move to the right
+                currentPosition += right;
+                currentPosition %= currentTopography.length();
+            }
+
+            System.out.println("Trees encoutnered: " + treesEncountered);
+
+            treesHitProduct *= treesEncountered;
+        }
+
+        System.out.println("Product of hit trees: " + treesHitProduct);
     }
 
     public static void loadInput() throws URISyntaxException, IOException {
