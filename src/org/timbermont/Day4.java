@@ -19,7 +19,10 @@ public class Day4 {
         loadInput();
 
         System.out.println("Part 1:");
-        System.out.println("valid passports: " + inputPassports.stream().filter(Passport::isValid).count());
+        long count = inputPassports.stream()
+                .filter(Passport::isValid)
+                .count();
+        System.out.println("valid passports: " + count);
     }
 
     public static void loadInput() throws URISyntaxException, IOException {
@@ -42,7 +45,6 @@ public class Day4 {
         private Map<String, String> data;
 
         static final Pattern dataPattern = Pattern.compile("(\\w+):([^\\s]+)");
-
 
         public Passport() {
             data = new HashMap<>();
