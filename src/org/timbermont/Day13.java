@@ -59,16 +59,16 @@ public class Day13 {
 
     private static void findSpecificMinute() {
         long currentMinute = 0;
-        long currentBase = 1;
+        long currentBase = 1; // base = amount by which we can increase 'currentMinute' while not violating all previously checked rules
 
         for (BuslineRequirement requirement : buslineRequirements) {
             long i = 0;
             while (!checkRequirement(currentMinute, requirement)) {
-                currentMinute += currentBase;
+                currentMinute += currentBase; // add the base (which cannot violate the previous requirements) untill the new requirement is met
                 i++;
                 if (i % 1_000_000 == 0) System.out.println("Currently checking minute " + currentMinute);
             }
-            currentBase = lcm(currentBase, requirement.busline);
+            currentBase = lcm(currentBase, requirement.busline); // add the current busline to currentbase so it's not violated in the future
             System.out.println(String.format("After applying %s, currentbase: %d, currentminute: %d", requirement, currentBase, currentMinute));
         }
 
