@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -17,7 +15,7 @@ import static java.lang.Long.toBinaryString;
 public class Day14 {
 
     private static List<Instruction> input;
-    private static final Pattern instructioNpattern = Pattern.compile("(mem|mask)(\\[\\d+\\])? = (.*)");
+    private static final Pattern INSTRUCTION_PATTERN = Pattern.compile("(mem|mask)(\\[\\d+\\])? = (.*)");
 
     public static void main(String[] args) throws IOException, URISyntaxException {
         loadInput();
@@ -26,7 +24,14 @@ public class Day14 {
         processInput1();
 
         System.out.println("Part 2:");
+        processInput2();
 
+    }
+
+    private static void loadInput() throws URISyntaxException, IOException {
+        input = Files.lines(Path.of(Day14.class.getResource("Day14_input.txt").toURI()))
+                .map(Instruction::forInput)
+                .collect(Collectors.toList());
     }
 
     public static void processInput1() {
@@ -50,10 +55,40 @@ public class Day14 {
         System.out.println("Sum of all values: " + total);
     }
 
-    private static void loadInput() throws URISyntaxException, IOException {
-        input = Files.lines(Path.of(Day14.class.getResource("Day14_input.txt").toURI()))
-                .map(Instruction::forInput)
-                .collect(Collectors.toList());
+
+    private static void processInput2() {
+        Map<Long, Long> memory = new HashMap<>();
+        Bitmask currentBitmask = new Bitmask("0");
+        for (Instruction instruction : input) {
+            switch (instruction._type) {
+                case MASK:
+                    currentBitmask = instruction._bitmask;
+                    break;
+                case MEM:
+                    final String floatingAddress = currentBitmask.apply2(instruction._memoryAddress);
+                    final List<Long> allAddresses = expandFloatingAddress(floatingAddress);
+                    for (Long address : allAddresses) {
+                        memory.put(address, instruction._memoryValue);
+                    }
+            }
+        }
+        System.out.println("resulting memory: " + memory);
+        long total = 0;
+        for (Long value : memory.values()) {
+            total += value;
+        }
+        System.out.println("Sum of all values: " + total);
+    }
+
+    private static List<Long> expandFloatingAddress(final String floatingAddress) {
+        int firstXidx = floatingAddress.indexOf('X');
+        if (firstXidx < 0) return List.of(Long.parseLong(floatingAddress, 2));
+        final String prefix = floatingAddress.substring(0, firstXidx);
+        final String suffix = floatingAddress.substring(firstXidx + 1);
+        List<Long> result = new ArrayList<>();
+        result.addAll(expandFloatingAddress(prefix + "0" + suffix));
+        result.addAll(expandFloatingAddress(prefix + "1" + suffix));
+        return Collections.unmodifiableList(result);
     }
 
     private static class Instruction {
@@ -70,7 +105,7 @@ public class Day14 {
         }
 
         static Instruction forInput(final String input) {
-            Matcher matcher = instructioNpattern.matcher(input);
+            Matcher matcher = INSTRUCTION_PATTERN.matcher(input);
             if (matcher.matches()) {
                 switch (matcher.group(1)) {
                     case "mask":
@@ -102,7 +137,7 @@ public class Day14 {
         final String _originalMask;
 
         public Bitmask(final String input) {
-            _originalMask = leftPadWithX(input);
+            _originalMask = leftPad(input, 'X');
             _orMask = parseLong(_originalMask.replace('X', '0'), 2);
             _andMask = parseLong(_originalMask.replace('X', '1'), 2);
         }
@@ -114,7 +149,7 @@ public class Day14 {
         }
 
         public String apply2(final Long address) {
-            final String addressString = leftPadWithX(address.toString());
+            final String addressString = leftPad(Long.toBinaryString(address), '0');
             if (addressString.length() != _originalMask.length())
                 throw new IllegalStateException("bitmask and address are of different lengths!\n" +
                         "bitmask:\t" + _originalMask + "\n" +
@@ -144,10 +179,10 @@ public class Day14 {
                     '}';
         }
 
-        private static String leftPadWithX(final String input) {
+        private static String leftPad(final String input, char paddingCharacter) {
             final StringBuilder result = new StringBuilder(input);
             while (result.length() < 36) {
-                result.insert(0, 'X');
+                result.insert(0, paddingCharacter);
             }
             return result.toString();
         }
