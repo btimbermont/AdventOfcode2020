@@ -24,6 +24,9 @@ public class Day14 {
 
         System.out.println("Part 1:");
         processInput1();
+
+        System.out.println("Part 2:");
+
     }
 
     public static void processInput1() {
@@ -96,15 +99,12 @@ public class Day14 {
 
     private static class Bitmask {
         final long _andMask, _orMask;
+        final String _originalMask;
 
         public Bitmask(final String input) {
-            _orMask = parseLong(input.replace('X', '0'), 2);
-            final String andMask = input.replace('X', '1');
-            StringBuilder andPrefix = new StringBuilder();
-            for (int i = 0; i < 36 - andMask.length(); i++) {
-                andPrefix.append('1');
-            }
-            _andMask = parseLong(andPrefix.append(andMask).toString(), 2);
+            _originalMask = leftPad(input);
+            _orMask = parseLong(_originalMask.replace('X', '0'), 2);
+            _andMask = parseLong(_originalMask.replace('X', '1'), 2);
         }
 
         public long apply(final long value) {
@@ -113,12 +113,39 @@ public class Day14 {
             return newValue;
         }
 
+        public String apply2(final Long address) {
+            final String addressString = leftPad(address.toString());
+            if (addressString.length() != _originalMask.length())
+                throw new IllegalStateException("bitmask and address are of different lengths!\n" +
+                        "bitmask:\t" + _originalMask + "\n" +
+                        "address:\t" + addressString);
+            final StringBuilder result = new StringBuilder();
+            for (int i = 0; i < addressString.length(); i++) {
+                switch (_originalMask.charAt(i)) {
+                    case '0':
+                        result.append(addressString.charAt(i));
+                        break;
+                    case '1':
+                        result.append('1');
+                        break;
+                    case 'X':
+                        result.append('X');
+                        break;
+                }
+            }
+            return result.toString();
+        }
+
         @Override
         public String toString() {
             return "Bitmask{" +
                     "_andMask=" + toBinaryString(_andMask) +
                     ", _orMask=" + toBinaryString(_orMask) +
                     '}';
+        }
+
+        private static String leftPad(final String input) {
+            return "";
         }
     }
 }
