@@ -102,7 +102,7 @@ public class Day14 {
         final String _originalMask;
 
         public Bitmask(final String input) {
-            _originalMask = leftPad(input);
+            _originalMask = leftPadWithX(input);
             _orMask = parseLong(_originalMask.replace('X', '0'), 2);
             _andMask = parseLong(_originalMask.replace('X', '1'), 2);
         }
@@ -114,7 +114,7 @@ public class Day14 {
         }
 
         public String apply2(final Long address) {
-            final String addressString = leftPad(address.toString());
+            final String addressString = leftPadWithX(address.toString());
             if (addressString.length() != _originalMask.length())
                 throw new IllegalStateException("bitmask and address are of different lengths!\n" +
                         "bitmask:\t" + _originalMask + "\n" +
@@ -144,8 +144,12 @@ public class Day14 {
                     '}';
         }
 
-        private static String leftPad(final String input) {
-            return "";
+        private static String leftPadWithX(final String input) {
+            final StringBuilder result = new StringBuilder(input);
+            while (result.length() < 36) {
+                result.insert(0, 'X');
+            }
+            return result.toString();
         }
     }
 }
